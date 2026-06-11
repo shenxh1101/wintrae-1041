@@ -357,6 +357,43 @@ const HomePage: React.FC = () => {
               )}
 
               <View className={styles.eventSection}>
+                <Text className={styles.eventSectionTitle}>📒 处置记录</Text>
+                <View className={styles.timelineContainer}>
+                  {(selectedEvent.status === 'resolved' || selectedEvent.status === 'closed') && selectedEvent.resolvedTime && (
+                    <View className={styles.timelineNode}>
+                      <View className={classnames(styles.tnDot, styles.tnDot_success)} />
+                      <View className={styles.tnLine} />
+                      <View className={styles.tnBody}>
+                        <Text className={styles.tnTitle}>事件已解决</Text>
+                        {selectedEvent.handleResult && (
+                          <Text className={styles.tnDesc}>{selectedEvent.handleResult}</Text>
+                        )}
+                        <Text className={styles.tnTime}>{selectedEvent.resolvedTime} · {selectedEvent.handler || '网格员'}</Text>
+                      </View>
+                    </View>
+                  )}
+                  {selectedEvent.processTime && (
+                    <View className={styles.timelineNode}>
+                      <View className={classnames(styles.tnDot, styles.tnDot_warning)} />
+                      <View className={styles.tnLine} />
+                      <View className={styles.tnBody}>
+                        <Text className={styles.tnTitle}>开始处置</Text>
+                        <Text className={styles.tnTime}>{selectedEvent.processTime} · {selectedEvent.handler || '网格员'}</Text>
+                      </View>
+                    </View>
+                  )}
+                  <View className={styles.timelineNode}>
+                    <View className={classnames(styles.tnDot, styles.tnDot_primary)} />
+                    <View className={styles.tnBody}>
+                      <Text className={styles.tnTitle}>事件上报</Text>
+                      <Text className={styles.tnDesc}>{selectedEvent.description}</Text>
+                      <Text className={styles.tnTime}>{selectedEvent.reportTime} · {selectedEvent.reporter}</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              <View className={styles.eventSection}>
                 <View className={styles.eventSectionHeader}>
                   <Text className={styles.eventSectionTitle}>
                     ✍️ 处置结果

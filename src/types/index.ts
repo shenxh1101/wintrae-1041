@@ -24,8 +24,12 @@ export interface Task {
   checkInTime?: string
   checkInAddress?: string
   photos?: string[]
+  photoTime?: string
   voiceNote?: string
+  voiceTime?: string
   remark?: string
+  remarkTime?: string
+  completeTime?: string
 }
 
 // 事件类型
@@ -48,6 +52,8 @@ export interface Event {
   reportTime: string
   handler?: string
   handleTime?: string
+  processTime?: string
+  resolvedTime?: string
   handleResult?: string
   handlePhotos?: string[]
   photos?: string[]

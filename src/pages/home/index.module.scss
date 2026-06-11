@@ -653,3 +653,89 @@
   color: $color-text-white;
   font-weight: $font-weight-semibold;
 }
+
+.timelineContainer {
+  margin-top: $spacing-sm;
+  background: $color-bg-gray;
+  border-radius: $radius-md;
+  padding: $spacing-md $spacing-md $spacing-sm;
+}
+
+.timelineNode {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  padding-bottom: $spacing-md;
+
+  &:last-child {
+    padding-bottom: 0;
+
+    .tnLine {
+      display: none;
+    }
+  }
+}
+
+.tnDot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 8rpx;
+  margin-right: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.tnDot_primary {
+  background: $color-primary;
+  box-shadow: 0 0 0 6rpx rgba(22, 93, 255, 0.18);
+}
+
+.tnDot_warning {
+  background: $color-warning;
+  box-shadow: 0 0 0 6rpx rgba(255, 125, 0, 0.18);
+}
+
+.tnDot_success {
+  background: $color-success;
+  box-shadow: 0 0 0 6rpx rgba(0, 180, 42, 0.18);
+}
+
+.tnLine {
+  position: absolute;
+  left: 9rpx;
+  top: 30rpx;
+  bottom: 0;
+  width: 2rpx;
+  background: $color-border;
+}
+
+.tnBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.tnTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.tnDesc {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-bottom: 4rpx;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.tnTime {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
+}

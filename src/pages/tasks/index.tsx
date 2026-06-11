@@ -583,6 +583,71 @@ export default function TasksPage() {
                 </View>
               </View>
 
+              <View className={styles.timelineSection}>
+                <Text className={styles.sectionSubTitle}>📒 处置记录</Text>
+                <View className={styles.timelineList}>
+                  {selectedTask.completeTime && (
+                    <View className={styles.timelineItem}>
+                      <View className={classnames(styles.timelineDot, styles.timelineDot_success)} />
+                      <View className={styles.timelineLine} />
+                      <View className={styles.timelineContent}>
+                        <Text className={styles.timelineTitle}>任务完成</Text>
+                        <Text className={styles.timelineTime}>{selectedTask.completeTime}</Text>
+                      </View>
+                    </View>
+                  )}
+                  {selectedTask.remarkTime && selectedTask.remark && (
+                    <View className={styles.timelineItem}>
+                      <View className={classnames(styles.timelineDot, styles.timelineDot_primary)} />
+                      <View className={styles.timelineLine} />
+                      <View className={styles.timelineContent}>
+                        <Text className={styles.timelineTitle}>文字备注已保存</Text>
+                        <Text className={styles.timelineDesc}>{selectedTask.remark}</Text>
+                        <Text className={styles.timelineTime}>{selectedTask.remarkTime}</Text>
+                      </View>
+                    </View>
+                  )}
+                  {selectedTask.voiceTime && voiceData && (
+                    <View className={styles.timelineItem}>
+                      <View className={classnames(styles.timelineDot, styles.timelineDot_warning)} />
+                      <View className={styles.timelineLine} />
+                      <View className={styles.timelineContent}>
+                        <Text className={styles.timelineTitle}>语音备注已录制</Text>
+                        <Text className={styles.timelineDesc}>时长 {voiceData.duration} 秒</Text>
+                        <Text className={styles.timelineTime}>{selectedTask.voiceTime}</Text>
+                      </View>
+                    </View>
+                  )}
+                  {selectedTask.photoTime && (selectedTask.photos?.length || 0) > 0 && (
+                    <View className={styles.timelineItem}>
+                      <View className={classnames(styles.timelineDot, styles.timelineDot_info)} />
+                      <View className={styles.timelineLine} />
+                      <View className={styles.timelineContent}>
+                        <Text className={styles.timelineTitle}>现场照片已上传</Text>
+                        <Text className={styles.timelineDesc}>共 {selectedTask.photos?.length || 0} 张</Text>
+                        <Text className={styles.timelineTime}>{selectedTask.photoTime}</Text>
+                      </View>
+                    </View>
+                  )}
+                  {selectedTask.checkInTime && (
+                    <View className={styles.timelineItem}>
+                      <View className={classnames(styles.timelineDot, styles.timelineDot_primary)} />
+                      <View className={styles.timelineContent}>
+                        <Text className={styles.timelineTitle}>定位签到成功</Text>
+                        <Text className={styles.timelineDesc}>{selectedTask.checkInAddress || selectedTask.address}</Text>
+                        <Text className={styles.timelineTime}>{selectedTask.checkInTime}</Text>
+                      </View>
+                    </View>
+                  )}
+                  {!selectedTask.checkInTime && !selectedTask.photoTime && !selectedTask.voiceTime && !selectedTask.remarkTime && !selectedTask.completeTime && (
+                    <View className={styles.timelineEmpty}>
+                      <Text className={styles.timelineEmptyIcon}>📝</Text>
+                      <Text className={styles.timelineEmptyText}>暂无处置记录</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
               <View className={styles.detailBottomSpace} />
             </ScrollView>
 

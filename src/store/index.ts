@@ -124,9 +124,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   addTaskPhoto: persistMiddleware((_set: any) => (taskId: string, photo: string) => {
     console.log('[Store] addTaskPhoto:', taskId)
+    const now = new Date()
+    const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     set((state: AppState) => ({
       tasks: state.tasks.map((t) =>
-        t.id === taskId ? { ...t, photos: [...(t.photos || []), photo] } : t
+        t.id === taskId ? { ...t, photos: [...(t.photos || []), photo], photoTime: timeStr } : t
       )
     }))
   })(set, get),
@@ -145,10 +147,12 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   updateTaskVoice: persistMiddleware((_set: any) => (taskId: string, duration: number, url: string) => {
     console.log('[Store] updateTaskVoice:', taskId, duration)
+    const now = new Date()
+    const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     set((state: AppState) => ({
       tasks: state.tasks.map((t) =>
         t.id === taskId
-          ? { ...t, voiceNote: JSON.stringify({ duration, url, time: Date.now() }) }
+          ? { ...t, voiceNote: JSON.stringify({ duration, url, time: Date.now() }), voiceTime: timeStr }
           : t
       )
     }))
@@ -156,9 +160,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   updateTaskRemark: persistMiddleware((_set: any) => (taskId: string, remark: string) => {
     console.log('[Store] updateTaskRemark:', taskId)
+    const now = new Date()
+    const timeStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
     set((state: AppState) => ({
       tasks: state.tasks.map((t) =>
-        t.id === taskId ? { ...t, remark } : t
+        t.id === taskId ? { ...t, remark, remarkTime: timeStr } : t
       )
     }))
   })(set, get),
@@ -179,7 +185,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
       return {
         tasks: state.tasks.map((t) =>
-          t.id === taskId ? { ...t, status: 'completed' as const } : t
+          t.id === taskId ? { ...t, status: 'completed' as const, completeTime: timeStr } : t
         ),
         notifications: [newNotice, ...state.notifications]
       }
@@ -229,7 +235,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       return {
         events: state.events.map((e) => {
           if (e.id !== eventId) return e
-          return {
+          const updated: Event = {
             ...e,
             status,
             handler: mockGridWorker.name,
@@ -237,6 +243,13 @@ export const useAppStore = create<AppState>((set, get) => ({
             handleResult: handleResult !== undefined ? handleResult : e.handleResult,
             handlePhotos: handlePhotos !== undefined ? handlePhotos : e.handlePhotos
           }
+          if (status === 'processing' && !e.processTime) {
+            updated.processTime = timeStr
+          }
+          if (status === 'resolved' || status === 'closed') {
+            updated.resolvedTime = timeStr
+          }
+          return updated
         }),
         notifications: [newNotice, ...state.notifications]
       }

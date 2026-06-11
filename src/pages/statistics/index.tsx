@@ -1,35 +1,82 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import classnames from 'classnames'
+import dayjs from 'dayjs'
 import SectionHeader from '@/components/SectionHeader'
 import StatCard from '@/components/StatCard'
 import EventCard from '@/components/EventCard'
+import TaskCard from '@/components/TaskCard'
 import { mockGridWorker, grids } from '@/data/statistics'
 import { useAppStore } from '@/store'
 import styles from './index.module.scss'
+
+type TimeRange = 'today' | 'week' | 'month'
+
+const TIME_RANGE_TABS: Array<{ key: TimeRange; label: string }> = [
+  { key: 'today', label: '今日' },
+  { key: 'week', label: '本周' },
+  { key: 'month', label: '本月' }
+]
 
 const StatisticsPage: React.FC = () => {
   const tasks = useAppStore((s) => s.tasks)
   const events = useAppStore((s) => s.events)
   const resetAllData = useAppStore((s) => s.resetAllData)
 
+  const [timeRange, setTimeRange] = useState<TimeRange>('today')
+
+  const rangeStart = useMemo(() => {
+    const now = dayjs()
+    switch (timeRange) {
+      case 'today':
+        return now.startOf('day')
+      case 'week':
+        return now.startOf('week')
+      case 'month':
+        return now.startOf('month')
+    }
+  }, [timeRange])
+
+  const rangeEnd = useMemo(() => dayjs().endOf('day'), [])
+
+  const isInRange = (timeStr?: string) => {
+    if (!timeStr) return false
+    const t = dayjs(timeStr.replace(/-/g, '/'))
+    return t.isAfter(rangeStart.subtract(1, 'second')) && t.isBefore(rangeEnd.add(1, 'second'))
+  }
+
+  const todayStart = dayjs().startOf('day')
+  const todayEnd = dayjs().endOf('day')
+  const isToday = (timeStr?: string) => {
+    if (!timeStr) return false
+    const t = dayjs(timeStr.replace(/-/g, '/'))
+    return t.isAfter(todayStart.subtract(1, 'second')) && t.isBefore(todayEnd.add(1, 'second'))
+  }
+
   const stats = useMemo(() => {
     const totalTasks = tasks.length
-    const completedTasks = tasks.filter((t) => t.status === 'completed').length
-    const inProgressTasks = tasks.filter((t) => t.status === 'in_progress').length
-    const checkedInTasks = tasks.filter((t) => !!t.checkInTime).length
-    const overdueTasks = tasks.filter((t) => t.status === 'overdue').length
-    const pendingTasks = tasks.filter((t) => t.status === 'pending').length
+    const rangeCompletedTasks = tasks.filter((t) => isInRange(t.completeTime)).length
+    const rangeCheckedInTasks = tasks.filter((t) => isInRange(t.checkInTime)).length
 
     const totalEvents = events.length
+    const rangeResolvedEvents = events.filter((e) => isInRange(e.resolvedTime)).length
+
+    const inProgressTasks = tasks.filter((t) => t.status === 'in_progress').length
+    const overdueTasks = tasks.filter((t) => t.status === 'overdue').length
+    const pendingTasks = tasks.filter((t) => t.status === 'pending').length
+    const completedTasks = tasks.filter((t) => t.status === 'completed').length
+
     const resolvedEvents = events.filter((e) => e.status === 'resolved' || e.status === 'closed').length
     const processingEvents = events.filter((e) => e.status === 'processing').length
     const pendingEvents = events.filter((e) => e.status === 'pending').length
 
+    const todayNewEvents = events.filter((e) => isToday(e.reportTime)).length
+    const todayResolvedEvents = events.filter((e) => isToday(e.resolvedTime)).length
+
     const visitCompletionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
     const eventResolveRate = totalEvents > 0 ? Math.round((resolvedEvents / totalEvents) * 100) : 0
-    const checkInRate = totalTasks > 0 ? Math.round((checkedInTasks / totalTasks) * 100) : 0
+    const checkInRate = totalTasks > 0 ? Math.round((rangeCheckedInTasks / totalTasks) * 100) : 0
 
     const baseScore = 60
     const completedBonus = completedTasks * 3
@@ -37,34 +84,69 @@ const StatisticsPage: React.FC = () => {
     const overduePenalty = overdueTasks * 5
     const performanceScore = Math.max(0, Math.min(100, baseScore + completedBonus + resolvedBonus - overduePenalty))
 
-    const now = Date.now()
-    const todayVisits = tasks.filter((t) => {
-      if (!t.checkInTime) return false
-      const d = new Date(t.checkInTime.replace(/-/g, '/'))
-      const today = new Date()
-      return d.getFullYear() === today.getFullYear()
-        && d.getMonth() === today.getMonth()
-        && d.getDate() === today.getDate()
-    }).length
-
     return {
       totalTasks,
       completedTasks,
+      rangeCompletedTasks,
       inProgressTasks,
       pendingTasks,
       overdueTasks,
-      checkedInTasks,
+      rangeCheckedInTasks,
       totalEvents,
       resolvedEvents,
+      rangeResolvedEvents,
       processingEvents,
       pendingEvents,
+      todayNewEvents,
+      todayResolvedEvents,
       visitCompletionRate,
       eventResolveRate,
       checkInRate,
-      performanceScore,
-      todayVisits
+      performanceScore
     }
+  }, [tasks, events, rangeStart.valueOf(), rangeEnd.valueOf()])
+
+  const trendData = useMemo(() => {
+    const days: Array<{ label: string; visits: number; events: number }> = []
+    for (let i = 6; i >= 0; i--) {
+      const d = dayjs().subtract(i, 'day')
+      const start = d.startOf('day')
+      const end = d.endOf('day')
+      const inRange = (timeStr?: string) => {
+        if (!timeStr) return false
+        const t = dayjs(timeStr.replace(/-/g, '/'))
+        return t.isAfter(start.subtract(1, 'second')) && t.isBefore(end.add(1, 'second'))
+      }
+      const visits = tasks.filter((t) => inRange(t.checkInTime) || inRange(t.completeTime)).length
+      const resolvedCount = events.filter((e) => inRange(e.resolvedTime)).length
+      days.push({
+        label: d.format('MM/DD'),
+        visits,
+        events: resolvedCount
+      })
+    }
+    const maxVal = Math.max(1, ...days.map((d) => Math.max(d.visits, d.events)))
+    return days.map((d) => ({
+      ...d,
+      visitHeight: Math.round((d.visits / maxVal) * 100),
+      eventHeight: Math.round((d.events / maxVal) * 100)
+    }))
   }, [tasks, events])
+
+  const rangeEventList = useMemo(() => {
+    return events
+      .filter((e) => {
+        if (timeRange === 'today') return isToday(e.reportTime) || isToday(e.resolvedTime)
+        return isInRange(e.reportTime) || isInRange(e.resolvedTime)
+      })
+      .slice(0, 5)
+  }, [events, timeRange, rangeStart.valueOf()])
+
+  const rangeTaskList = useMemo(() => {
+    return tasks
+      .filter((t) => isInRange(t.checkInTime) || isInRange(t.completeTime))
+      .slice(0, 5)
+  }, [tasks, rangeStart.valueOf()])
 
   const gridRankings = useMemo(() => {
     const gridMap: Record<string, { visits: number; resolved: number; overdue: number }> = {}
@@ -90,7 +172,7 @@ const StatisticsPage: React.FC = () => {
     })
 
     return grids
-      .map((g, idx) => {
+      .map((g) => {
         const data = gridMap[g] || { visits: 0, resolved: 0, overdue: 0 }
         const score = 60 + data.visits * 3 + data.resolved * 4 - data.overdue * 5
         const isCurrent = g === mockGridWorker.grid
@@ -101,8 +183,7 @@ const StatisticsPage: React.FC = () => {
           overdue: data.overdue,
           score: Math.max(0, Math.min(100, score)),
           ranking: 0,
-          isCurrent,
-          originalIndex: idx
+          isCurrent
         }
       })
       .sort((a, b) => b.score - a.score)
@@ -114,10 +195,6 @@ const StatisticsPage: React.FC = () => {
       })
   }, [tasks, events])
 
-  const overdueEventList = useMemo(() => {
-    return events.filter((e) => e.status === 'pending' || e.status === 'processing').slice(0, 3)
-  }, [events])
-
   const handleResetData = () => {
     Taro.showModal({
       title: '确认重置',
@@ -126,10 +203,6 @@ const StatisticsPage: React.FC = () => {
         if (res.confirm) resetAllData()
       }
     })
-  }
-
-  const handleOverdueClick = (id: string) => {
-    Taro.showToast({ title: `查看事件 ${id}`, icon: 'none' })
   }
 
   return (
@@ -163,20 +236,54 @@ const StatisticsPage: React.FC = () => {
       </View>
 
       <ScrollView scrollY className={styles.content} enhanced>
+        <View className={styles.rangeTabs}>
+          {TIME_RANGE_TABS.map((tab) => (
+            <View
+              key={tab.key}
+              className={classnames(styles.rangeTab, { [styles.rangeTabActive]: timeRange === tab.key })}
+              onClick={() => setTimeRange(tab.key)}
+            >
+              <Text className={classnames(styles.rangeTabText, { [styles.rangeTabTextActive]: timeRange === tab.key })}>
+                {tab.label}
+              </Text>
+            </View>
+          ))}
+        </View>
+
         <View className={styles.section}>
-          <SectionHeader title='核心数据' />
+          <SectionHeader title='今日动态' />
+          <View className={styles.dailyRow}>
+            <View className={styles.dailyCard}>
+              <Text className={styles.dailyIcon}>📥</Text>
+              <View className={styles.dailyInfo}>
+                <Text className={styles.dailyValue}>{stats.todayNewEvents}</Text>
+                <Text className={styles.dailyLabel}>今日新增事件</Text>
+              </View>
+            </View>
+            <View className={styles.dailyCard}>
+              <Text className={styles.dailyIcon}>✅</Text>
+              <View className={styles.dailyInfo}>
+                <Text className={styles.dailyValue}>{stats.todayResolvedEvents}</Text>
+                <Text className={styles.dailyLabel}>今日已解决</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        <View className={styles.section}>
+          <SectionHeader title='核心数据' extra={TIME_RANGE_TABS.find((t) => t.key === timeRange)?.label} />
           <View className={styles.statGrid}>
             <StatCard
               color='primary'
-              title='本月走访'
-              value={stats.completedTasks + stats.inProgressTasks}
+              title='走访次数'
+              value={stats.rangeCheckedInTasks}
               unit='次'
-              trend={`已完成 ${stats.completedTasks}`}
+              trend={`完成 ${stats.rangeCompletedTasks}`}
             />
             <StatCard
               color='success'
               title='事件处置'
-              value={stats.resolvedEvents}
+              value={stats.rangeResolvedEvents}
               unit='件'
               trend={`处置中 ${stats.processingEvents}`}
             />
@@ -185,7 +292,7 @@ const StatisticsPage: React.FC = () => {
               title='进行中任务'
               value={stats.pendingTasks + stats.inProgressTasks}
               unit='项'
-              trend={`已签到 ${stats.checkedInTasks}`}
+              trend={`已签到 ${stats.rangeCheckedInTasks}`}
             />
             <StatCard
               color='error'
@@ -194,6 +301,43 @@ const StatisticsPage: React.FC = () => {
               unit='项'
               trend='需尽快处理'
             />
+          </View>
+        </View>
+
+        <View className={styles.section}>
+          <SectionHeader title='近7天走访趋势' />
+          <View className={styles.trendCard}>
+            <View className={styles.trendLegend}>
+              <View className={styles.legendItem}>
+                <View className={classnames(styles.legendDot, styles.legendDot_primary)} />
+                <Text className={styles.legendText}>走访</Text>
+              </View>
+              <View className={styles.legendItem}>
+                <View className={classnames(styles.legendDot, styles.legendDot_success)} />
+                <Text className={styles.legendText}>解决事件</Text>
+              </View>
+            </View>
+            <View className={styles.trendChart}>
+              {trendData.map((item, i) => (
+                <View key={i} className={styles.trendCol}>
+                  <View className={styles.trendBars}>
+                    <View
+                      className={classnames(styles.trendBar, styles.trendBar_primary)}
+                      style={{ height: `${Math.max(item.visitHeight, 4)}%` }}
+                    >
+                      {item.visits > 0 && <Text className={styles.trendBarVal}>{item.visits}</Text>}
+                    </View>
+                    <View
+                      className={classnames(styles.trendBar, styles.trendBar_success)}
+                      style={{ height: `${Math.max(item.eventHeight, 4)}%` }}
+                    >
+                      {item.events > 0 && <Text className={styles.trendBarVal}>{item.events}</Text>}
+                    </View>
+                  </View>
+                  <Text className={styles.trendLabel}>{item.label}</Text>
+                </View>
+              ))}
+            </View>
           </View>
         </View>
 
@@ -238,7 +382,7 @@ const StatisticsPage: React.FC = () => {
                   style={{ width: `${stats.checkInRate}%` }} />
               </View>
               <Text className={styles.progressSub}>
-                已签到 {stats.checkedInTasks} / 共 {stats.totalTasks} 项
+                已签到 {stats.rangeCheckedInTasks} / 共 {stats.totalTasks} 项
               </Text>
             </View>
           </View>
@@ -284,21 +428,26 @@ const StatisticsPage: React.FC = () => {
           </View>
         </View>
 
-        <View className={styles.section}>
-          <SectionHeader title='待处理/进行中事件' extra={`${overdueEventList.length}件`} />
-          <View className={styles.eventList}>
-            {overdueEventList.length === 0 ? (
-              <View className={styles.emptyTip}>
-                <Text className={styles.emptyIcon}>✨</Text>
-                <Text className={styles.emptyText}>暂无待处理事件</Text>
-              </View>
-            ) : (
-              overdueEventList.map((event) => (
-                <EventCard key={event.id} event={event} onClick={() => handleOverdueClick(event.id)} />
-              ))
-            )}
+        {(rangeEventList.length > 0 || rangeTaskList.length > 0) && (
+          <View className={styles.section}>
+            <SectionHeader
+              title={`${TIME_RANGE_TABS.find((t) => t.key === timeRange)?.label}动态记录`}
+              extra={`${rangeEventList.length + rangeTaskList.length}条`}
+            />
+            <View className={styles.dynamicList}>
+              {rangeTaskList.map((task) => (
+                <View key={`t_${task.id}`}>
+                  <TaskCard task={task} />
+                </View>
+              ))}
+              {rangeEventList.map((event) => (
+                <View key={`e_${event.id}`}>
+                  <EventCard event={event} />
+                </View>
+              ))}
+            </View>
           </View>
-        </View>
+        )}
 
         <View className={styles.pageBottom} />
       </ScrollView>
