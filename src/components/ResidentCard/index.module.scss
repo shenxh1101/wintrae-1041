@@ -1,0 +1,133 @@
+@use '@/styles/variables.scss' as *;
+
+.residentCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: flex-start;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.99);
+  }
+}
+
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-round;
+  background: $color-primary-gradient;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-right: $spacing-md;
+}
+
+.avatarText {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: $spacing-xs;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-right: $spacing-sm;
+}
+
+.genderAge {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.specialBadge {
+  background: $color-error-bg;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-xs;
+  margin-left: $spacing-sm;
+}
+
+.specialText {
+  font-size: 20rpx;
+  color: $color-error;
+  line-height: 1.4;
+}
+
+.address {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  @include text-ellipsis;
+}
+
+.tagRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.tag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: 22rpx;
+  line-height: 1.4;
+
+  &.elderly {
+    background: $color-tag-orange;
+    color: $color-warning;
+  }
+
+  &.disabled {
+    background: $color-tag-blue;
+    color: $color-primary;
+  }
+
+  &.low_income {
+    background: $color-tag-green;
+    color: $color-success;
+  }
+
+  &.left_behind {
+    background: $color-tag-gray;
+    color: $color-text-secondary;
+  }
+
+  &.special_care {
+    background: $color-tag-red;
+    color: $color-error;
+  }
+
+  &.party_member {
+    background: $color-tag-red;
+    color: $color-error;
+  }
+}
+
+.householdTag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: 22rpx;
+  line-height: 1.4;
+  background: $color-primary-bg;
+  color: $color-primary;
+}

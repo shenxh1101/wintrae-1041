@@ -1,0 +1,77 @@
+@use '@/styles/variables.scss' as *;
+
+.statCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4rpx;
+    height: 100%;
+    border-radius: $radius-lg 0 0 $radius-lg;
+  }
+
+  &.primary::before {
+    background: $color-primary;
+  }
+
+  &.success::before {
+    background: $color-success;
+  }
+
+  &.warning::before {
+    background: $color-warning;
+  }
+
+  &.error::before {
+    background: $color-error;
+  }
+}
+
+.title {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.valueRow {
+  display: flex;
+  align-items: baseline;
+}
+
+.value {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1.2;
+}
+
+.unit {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: $spacing-xs;
+}
+
+.trend {
+  margin-top: $spacing-sm;
+
+  &.up .trendText {
+    color: $color-success;
+  }
+
+  &.down .trendText {
+    color: $color-error;
+  }
+}
+
+.trendText {
+  font-size: $font-size-xs;
+}

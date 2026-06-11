@@ -1,0 +1,332 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  display: flex;
+  flex-direction: column;
+}
+
+.searchBar {
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.searchInput {
+  height: 72rpx;
+  background: $color-bg-gray;
+  border-radius: $radius-round;
+  padding: 0 $spacing-lg;
+  display: flex;
+  align-items: center;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.searchIcon {
+  margin-right: $spacing-sm;
+  font-size: 28rpx;
+}
+
+.searchText {
+  color: $color-text-tertiary;
+}
+
+.tagTabs {
+  background: $color-bg-card;
+  padding: $spacing-sm $page-padding;
+  display: flex;
+  gap: $spacing-sm;
+  overflow-x: auto;
+  border-bottom: 1rpx solid $color-divider;
+  white-space: nowrap;
+}
+
+.tagTab {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: $color-bg-gray;
+  flex-shrink: 0;
+  transition: all $transition-fast;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.residentList {
+  flex: 1;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xl * 2 0;
+}
+
+.emptyIcon {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-round;
+  background: $color-bg-gray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $spacing-md;
+  font-size: 48rpx;
+  color: $color-text-disabled;
+}
+
+.emptyText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.detailModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.modalContent {
+  background: $color-bg-card;
+  border-radius: $radius-xl $radius-xl 0 0;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modalHeader {
+  padding: $spacing-lg;
+  padding-top: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.closeBtn {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-xl;
+  color: $color-text-tertiary;
+}
+
+.modalBody {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.residentHeader {
+  padding: $spacing-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  display: flex;
+  align-items: center;
+}
+
+.residentAvatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-lg;
+  border: 2rpx solid rgba(255, 255, 255, 0.4);
+}
+
+.avatarText {
+  font-size: 48rpx;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.residentInfo {
+  flex: 1;
+}
+
+.residentName {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+  margin-bottom: 8rpx;
+}
+
+.residentMeta {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-sm;
+}
+
+.residentTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-xs;
+}
+
+.residentTag {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: 22rpx;
+  background: rgba(255, 255, 255, 0.25);
+  color: $color-text-white;
+}
+
+.infoSection {
+  padding: $spacing-lg;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    width: 6rpx;
+    height: 28rpx;
+    background: $color-primary;
+    border-radius: $radius-xs;
+    margin-right: $spacing-sm;
+  }
+}
+
+.infoRow {
+  display: flex;
+  padding: $spacing-sm 0;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+}
+
+.infoLabel {
+  width: 160rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.contactList {
+  margin-top: 0;
+}
+
+.contactItem {
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.contactHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.contactType {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.contactTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.contactContent {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+}
+
+.contactOperator {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.modalFooter {
+  padding: $spacing-md $spacing-lg;
+  padding-bottom: calc(env(safe-area-inset-bottom) + #{$spacing-md});
+  border-top: 1rpx solid $color-divider;
+  display: flex;
+  gap: $spacing-md;
+}
+
+.modalBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+
+  &.primary {
+    background: $color-primary-gradient;
+    color: $color-text-white;
+  }
+
+  &.outline {
+    background: $color-bg-card;
+    color: $color-primary;
+    border: 2rpx solid $color-primary;
+  }
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}

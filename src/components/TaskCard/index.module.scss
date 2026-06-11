@@ -1,0 +1,146 @@
+@use '@/styles/variables.scss' as *;
+
+.taskCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.99);
+  }
+}
+
+.cardHeader {
+  margin-bottom: $spacing-md;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.title {
+  flex: 1;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.4;
+  @include text-ellipsis;
+}
+
+.urgencyTag {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+
+  &.high {
+    background: $color-error-bg;
+    .urgencyText { color: $color-error; }
+  }
+
+  &.medium {
+    background: $color-warning-bg;
+    .urgencyText { color: $color-warning; }
+  }
+
+  &.low {
+    background: $color-success-bg;
+    .urgencyText { color: $color-success; }
+  }
+}
+
+.urgencyText {
+  font-size: $font-size-xs;
+  line-height: 1.4;
+}
+
+.typeRow {
+  display: flex;
+}
+
+.typeTag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: $color-primary-bg;
+  color: $color-primary;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  line-height: 1.4;
+}
+
+.cardBody {
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.infoRow {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.infoText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex: 1;
+  @include text-ellipsis;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-md;
+}
+
+.statusBadge {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-round;
+
+  &.pending {
+    background: $color-warning-bg;
+    .statusText { color: $color-warning; }
+  }
+
+  &.in_progress {
+    background: $color-primary-bg;
+    .statusText { color: $color-primary; }
+  }
+
+  &.completed {
+    background: $color-success-bg;
+    .statusText { color: $color-success; }
+  }
+
+  &.overdue {
+    background: $color-error-bg;
+    .statusText { color: $color-error; }
+  }
+}
+
+.statusText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.resident {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}

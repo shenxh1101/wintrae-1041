@@ -1,0 +1,300 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
+}
+
+.header {
+  background: $color-primary-gradient;
+  padding: $spacing-xl $page-padding $spacing-xl;
+  padding-top: calc(env(safe-area-inset-top) + #{$spacing-xl});
+  position: relative;
+  border-radius: 0 0 $radius-xl $radius-xl;
+}
+
+.greetingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.workerInfo {
+  display: flex;
+  align-items: center;
+}
+
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-md;
+  border: 2rpx solid rgba(255, 255, 255, 0.4);
+}
+
+.avatarText {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.textGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+  margin-bottom: 4rpx;
+}
+
+.gridInfo {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+}
+
+.dateText {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.statGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  margin-top: $spacing-lg;
+}
+
+.statItem {
+  flex: 1;
+  min-width: calc(50% - #{$spacing-md / 2});
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  backdrop-filter: blur(10rpx);
+}
+
+.statValue {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+  line-height: 1.2;
+  margin-bottom: 4rpx;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.content {
+  padding: 0 $page-padding;
+  margin-top: -$spacing-lg;
+  position: relative;
+  z-index: 1;
+}
+
+.section {
+  margin-bottom: $spacing-lg;
+}
+
+.routeCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.routeTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.routeCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
+}
+
+.routeList {
+  position: relative;
+}
+
+.routeItem {
+  display: flex;
+  align-items: flex-start;
+  padding-bottom: $spacing-md;
+  position: relative;
+
+  &:last-child {
+    padding-bottom: 0;
+
+    .routeLine {
+      display: none;
+    }
+  }
+}
+
+.routeDot {
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: $radius-round;
+  margin-right: $spacing-md;
+  margin-top: 6rpx;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+
+  &.visited {
+    background: $color-success;
+  }
+
+  &.current {
+    background: $color-primary;
+    box-shadow: 0 0 0 6rpx rgba(22, 93, 255, 0.2);
+  }
+
+  &.pending {
+    background: $color-border;
+  }
+}
+
+.routeLine {
+  position: absolute;
+  left: 11rpx;
+  top: 36rpx;
+  width: 2rpx;
+  height: calc(100% - 24rpx);
+  background: $color-border;
+  z-index: 1;
+
+  &.visited {
+    background: $color-success;
+  }
+}
+
+.routeInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.routeName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+
+  &.pending {
+    color: $color-text-tertiary;
+    font-weight: $font-weight-normal;
+  }
+}
+
+.routeAddress {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.routeTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+
+  &.current {
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.eventList {
+  margin-top: 0;
+}
+
+.noticeCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.noticeItem {
+  display: flex;
+  align-items: flex-start;
+  padding: $spacing-md 0;
+  border-bottom: 1rpx solid $color-divider;
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  &:first-child {
+    padding-top: 0;
+  }
+}
+
+.noticeDot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: $radius-round;
+  margin-top: 10rpx;
+  margin-right: $spacing-sm;
+  flex-shrink: 0;
+
+  &.unread {
+    background: $color-error;
+  }
+
+  &.read {
+    background: $color-border;
+  }
+}
+
+.noticeContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.noticeTitle {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+  @include text-ellipsis;
+
+  &.unread {
+    font-weight: $font-weight-medium;
+  }
+}
+
+.noticeDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.noticeTime {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+  flex-shrink: 0;
+  margin-left: $spacing-sm;
+}

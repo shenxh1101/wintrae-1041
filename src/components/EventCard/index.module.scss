@@ -1,0 +1,141 @@
+@use '@/styles/variables.scss' as *;
+
+.eventCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.99);
+  }
+}
+
+.cardHeader {
+  margin-bottom: $spacing-md;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+}
+
+.title {
+  flex: 1;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.4;
+  @include text-ellipsis;
+}
+
+.urgencyTag {
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+
+  &.high {
+    background: $color-error-bg;
+    .urgencyText { color: $color-error; }
+  }
+
+  &.medium {
+    background: $color-warning-bg;
+    .urgencyText { color: $color-warning; }
+  }
+
+  &.low {
+    background: $color-success-bg;
+    .urgencyText { color: $color-success; }
+  }
+}
+
+.urgencyText {
+  font-size: $font-size-xs;
+  line-height: 1.4;
+}
+
+.typeRow {
+  display: flex;
+}
+
+.typeTag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: $color-tag-blue;
+  color: $color-primary;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  line-height: 1.4;
+}
+
+.cardBody {
+  padding-bottom: $spacing-md;
+  border-bottom: 1rpx solid $color-divider;
+  margin-bottom: $spacing-md;
+}
+
+.description {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 1.6;
+  @include text-ellipsis-multi(2);
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statusBadge {
+  padding: 6rpx 16rpx;
+  border-radius: $radius-round;
+
+  &.pending {
+    background: $color-warning-bg;
+    .statusText { color: $color-warning; }
+  }
+
+  &.processing {
+    background: $color-primary-bg;
+    .statusText { color: $color-primary; }
+  }
+
+  &.resolved {
+    background: $color-success-bg;
+    .statusText { color: $color-success; }
+  }
+
+  &.closed {
+    background: $color-tag-gray;
+    .statusText { color: $color-text-tertiary; }
+  }
+}
+
+.statusText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+}
+
+.metaText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.dot {
+  margin: 0 $spacing-xs;
+  color: $color-text-disabled;
+  font-size: $font-size-xs;
+}

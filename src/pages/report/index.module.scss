@@ -1,0 +1,335 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 140rpx);
+}
+
+.formSection {
+  background: $color-bg-card;
+  margin: $spacing-md 0;
+  padding: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+
+  &::before {
+    content: '';
+    width: 6rpx;
+    height: 28rpx;
+    background: $color-primary;
+    border-radius: $radius-xs;
+    margin-right: $spacing-sm;
+  }
+}
+
+.typeGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+}
+
+.typeItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-md $spacing-sm;
+  border-radius: $radius-lg;
+  border: 2rpx solid $color-border;
+  background: $color-bg-card;
+  transition: all $transition-fast;
+
+  &.active {
+    border-color: $color-primary;
+    background: $color-primary-bg;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.typeIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-round;
+  background: $color-bg-gray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $spacing-sm;
+  font-size: 32rpx;
+
+  .active & {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+}
+
+.typeLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+
+  .active & {
+    color: $color-primary;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.urgencyRow {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.urgencyItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-md;
+  border-radius: $radius-lg;
+  border: 2rpx solid $color-border;
+  background: $color-bg-card;
+  transition: all $transition-fast;
+
+  &.active {
+    &.high {
+      border-color: $color-error;
+      background: $color-error-bg;
+      .urgencyLabel { color: $color-error; }
+      .urgencyDot { background: $color-error; }
+    }
+
+    &.medium {
+      border-color: $color-warning;
+      background: $color-warning-bg;
+      .urgencyLabel { color: $color-warning; }
+      .urgencyDot { background: $color-warning; }
+    }
+
+    &.low {
+      border-color: $color-success;
+      background: $color-success-bg;
+      .urgencyLabel { color: $color-success; }
+      .urgencyDot { background: $color-success; }
+    }
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.urgencyDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  background: $color-border;
+  margin-bottom: $spacing-xs;
+}
+
+.urgencyLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.gridSelect {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background: $color-bg-gray;
+  border-radius: $radius-md;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.gridValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.gridArrow {
+  font-size: $font-size-lg;
+  color: $color-text-tertiary;
+}
+
+.locationRow {
+  display: flex;
+  align-items: center;
+  padding: $spacing-md;
+  background: $color-bg-gray;
+  border-radius: $radius-md;
+}
+
+.locationIcon {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+  background: $color-primary-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: $spacing-sm;
+  font-size: 24rpx;
+  color: $color-primary;
+}
+
+.locationText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  @include text-ellipsis;
+}
+
+.locationBtn {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  margin-left: $spacing-sm;
+}
+
+.descTextarea {
+  width: 100%;
+  min-height: 200rpx;
+  padding: $spacing-md;
+  background: $color-bg-gray;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.photoGrid {
+  display: flex;
+  gap: $spacing-md;
+  flex-wrap: wrap;
+}
+
+.photoItem {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: $radius-md;
+  background: $color-bg-gray;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.photoAdd {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: $radius-md;
+  border: 2rpx dashed $color-border;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: $color-bg-gray;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.photoAddIcon {
+  font-size: 48rpx;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+}
+
+.photoAddText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.photoRemove {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: $radius-round;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-white;
+  font-size: 24rpx;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + #{$spacing-md});
+  background: $color-bg-card;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  z-index: 100;
+}
+
+.submitBtn {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: $color-primary-gradient;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    background: $color-text-disabled;
+    color: $color-text-white;
+  }
+}
+
+.successToast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: $spacing-lg;
+  border-radius: $radius-lg;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.successIcon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  background: $color-success;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $spacing-md;
+  color: $color-text-white;
+  font-size: 48rpx;
+}
+
+.successText {
+  font-size: $font-size-md;
+  color: $color-text-white;
+}

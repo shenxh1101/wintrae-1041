@@ -1,0 +1,32 @@
+@use '@/styles/variables.scss' as *;
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.titleWrapper {
+  display: flex;
+  align-items: center;
+}
+
+.titleBar {
+  width: 6rpx;
+  height: 32rpx;
+  background: $color-primary;
+  border-radius: $radius-xs;
+  margin-right: $spacing-sm;
+}
+
+.title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.extra {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
