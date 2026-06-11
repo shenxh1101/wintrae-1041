@@ -227,6 +227,23 @@
   overflow: hidden;
 }
 
+.photoImg {
+  width: 100%;
+  height: 100%;
+}
+
+.gridPlaceholder {
+  color: $color-text-tertiary;
+}
+
+.locationPlaceholder {
+  color: $color-text-tertiary;
+}
+
+.submitBtnDisabled {
+  background: $color-text-disabled !important;
+}
+
 .photoAdd {
   width: 180rpx;
   height: 180rpx;

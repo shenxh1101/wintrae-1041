@@ -298,3 +298,27 @@
   flex-shrink: 0;
   margin-left: $spacing-sm;
 }
+
+.emptyTip {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: $shadow-card;
+}
+
+.emptyTipIcon {
+  font-size: 64rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyTipText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.pageFooter {
+  height: $spacing-xl;
+}

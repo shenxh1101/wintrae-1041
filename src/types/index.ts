@@ -22,6 +22,7 @@ export interface Task {
   residentName?: string
   residentPhone?: string
   checkInTime?: string
+  checkInAddress?: string
   photos?: string[]
   voiceNote?: string
   remark?: string
