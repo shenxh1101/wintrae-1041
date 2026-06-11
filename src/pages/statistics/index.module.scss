@@ -3,7 +3,6 @@
 .page {
   min-height: 100vh;
   background: $color-bg-page;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
 }
 
 .header {
@@ -13,34 +12,56 @@
   border-radius: 0 0 $radius-xl $radius-xl;
 }
 
+.headerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
 .headerTitle {
   font-size: $font-size-xl;
   font-weight: $font-weight-semibold;
   color: $color-text-white;
-  margin-bottom: $spacing-md;
 }
 
-.headerSubtitle {
-  font-size: $font-size-sm;
-  color: rgba(255, 255, 255, 0.85);
-  margin-bottom: $spacing-lg;
+.resetBtn {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8rpx 20rpx;
+  border-radius: $radius-pill;
 }
 
-.performanceCard {
+.resetBtnText {
+  font-size: $font-size-xs;
+  color: $color-text-white;
+}
+
+.scoreCard {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10rpx);
   border-radius: $radius-lg;
   padding: $spacing-lg;
   display: flex;
   align-items: center;
-  margin-bottom: $spacing-lg;
+  justify-content: space-between;
 }
 
-.scoreSection {
-  text-align: center;
+.scoreInfo {
+  flex: 1;
   padding-right: $spacing-lg;
   border-right: 1rpx solid rgba(255, 255, 255, 0.3);
-  margin-right: $spacing-lg;
+}
+
+.scoreLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-xs;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  margin-bottom: 8rpx;
 }
 
 .scoreValue {
@@ -48,150 +69,67 @@
   font-weight: $font-weight-bold;
   color: $color-text-white;
   line-height: 1;
-  margin-bottom: 8rpx;
 }
 
-.scoreLabel {
+.scoreUnit {
   font-size: $font-size-sm;
   color: rgba(255, 255, 255, 0.85);
+  margin-left: 8rpx;
 }
 
-.rankSection {
-  flex: 1;
+.scoreGrid {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.75);
 }
 
-.rankRow {
+.rankInfo {
+  padding-left: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.rankLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-xs;
+}
+
+.rankValueWrap {
   display: flex;
   align-items: baseline;
-  margin-bottom: 8rpx;
+}
+
+.rankValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.rankTotal {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.75);
+  margin-left: 4rpx;
+}
+
+.content {
+  height: calc(100vh - 320rpx - env(safe-area-inset-top));
+  padding: $spacing-lg $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 120rpx);
+}
+
+.section {
+  margin-bottom: $spacing-xl;
 
   &:last-child {
     margin-bottom: 0;
   }
 }
 
-.rankLabel {
-  font-size: $font-size-sm;
-  color: rgba(255, 255, 255, 0.85);
-  width: 100rpx;
-}
-
-.rankValue {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-text-white;
-}
-
 .statGrid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: $spacing-md;
-}
-
-.statCard {
-  background: $color-bg-card;
-  border-radius: $radius-lg;
-  padding: $spacing-lg;
-  box-shadow: $shadow-card;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4rpx;
-    height: 100%;
-    border-radius: $radius-lg 0 0 $radius-lg;
-  }
-
-  &.primary::before { background: $color-primary; }
-  &.success::before { background: $color-success; }
-  &.warning::before { background: $color-warning; }
-  &.error::before { background: $color-error; }
-}
-
-.statTitle {
-  font-size: $font-size-sm;
-  color: $color-text-tertiary;
-  margin-bottom: $spacing-sm;
-  display: block;
-}
-
-.statValue {
-  font-size: $font-size-xxl;
-  font-weight: $font-weight-bold;
-  color: $color-text-primary;
-  line-height: 1.2;
-  margin-bottom: $spacing-xs;
-}
-
-.statUnit {
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
-  margin-left: 4rpx;
-}
-
-.statSubtext {
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
-}
-
-.progressBar {
-  height: 12rpx;
-  background: $color-bg-gray;
-  border-radius: 6rpx;
-  overflow: hidden;
-  margin-top: $spacing-sm;
-}
-
-.progressFill {
-  height: 100%;
-  border-radius: 6rpx;
-  transition: width $transition-base;
-
-  &.primary { background: $color-primary; }
-  &.success { background: $color-success; }
-  &.warning { background: $color-warning; }
-}
-
-.content {
-  padding: 0 $page-padding;
-  margin-top: $spacing-lg;
-}
-
-.section {
-  margin-bottom: $spacing-lg;
-}
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: $spacing-md;
-}
-
-.sectionTitle {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  display: flex;
-  align-items: center;
-
-  &::before {
-    content: '';
-    width: 6rpx;
-    height: 32rpx;
-    background: $color-primary;
-    border-radius: $radius-xs;
-    margin-right: $spacing-sm;
-  }
-}
-
-.sectionExtra {
-  font-size: $font-size-sm;
-  color: $color-text-tertiary;
 }
 
 .progressCard {
@@ -221,73 +159,139 @@
   color: $color-text-secondary;
 }
 
-.progressPercent {
-  font-size: $font-size-sm;
+.progressValue {
+  font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
 }
 
-.rankList {
-  background: $color-bg-card;
-  border-radius: $radius-lg;
-  box-shadow: $shadow-card;
+.progressBar {
+  height: 16rpx;
+  background: $color-bg-gray;
+  border-radius: 8rpx;
   overflow: hidden;
+  margin-bottom: $spacing-xs;
 }
 
-.rankItem {
+.progressFill {
+  height: 100%;
+  border-radius: 8rpx;
+  transition: width 0.3s ease;
+}
+
+.progressFill_primary {
+  background: $color-primary-gradient;
+}
+
+.progressFill_success {
+  background: $color-success-gradient;
+}
+
+.progressFill_warning {
+  background: $color-warning-gradient;
+}
+
+.progressSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.rankCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.rankRow {
   display: flex;
   align-items: center;
-  padding: $spacing-md $spacing-lg;
+  padding: $spacing-md 0;
   border-bottom: 1rpx solid $color-divider;
 
   &:last-child {
     border-bottom: none;
   }
-
-  &.current {
-    background: $color-primary-bg;
-  }
 }
 
-.rankNumber {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: $radius-round;
-  background: $color-bg-gray;
+.rankRow_current {
+  background: $color-primary-bg;
+  margin: 0 -#{$spacing-lg};
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-md;
+}
+
+.rankBadge {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $color-text-tertiary;
   margin-right: $spacing-md;
   flex-shrink: 0;
+}
 
-  &.rank1 {
-    background: linear-gradient(135deg, #ffd700 0%, #ffb800 100%);
-    color: #fff;
-  }
+.rankBadge_gold {
+  background: linear-gradient(135deg, #ffd700 0%, #ffb800 100%);
+}
 
-  &.rank2 {
-    background: linear-gradient(135deg, #c0c0c0 0%, #a0a0a0 100%);
-    color: #fff;
-  }
+.rankBadge_silver {
+  background: linear-gradient(135deg, #c0c0c0 0%, #a8a8a8 100%);
+}
 
-  &.rank3 {
-    background: linear-gradient(135deg, #cd7f32 0%, #a0522d 100%);
-    color: #fff;
+.rankBadge_bronze {
+  background: linear-gradient(135deg, #cd7f32 0%, #b87333 100%);
+}
+
+.rankBadge_normal {
+  background: $color-bg-gray;
+}
+
+.rankBadgeText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-secondary;
+
+  .rankBadge_gold &,
+  .rankBadge_silver &,
+  .rankBadge_bronze & {
+    color: $color-text-white;
   }
 }
 
-.rankInfo {
+.rankInfoCol {
   flex: 1;
   min-width: 0;
 }
 
+.rankNameRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+
 .rankName {
-  font-size: $font-size-md;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
   color: $color-text-primary;
-  margin-bottom: 4rpx;
+  margin-right: $spacing-xs;
+}
+
+.rankName_current {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.currentTag {
+  background: $color-primary;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-pill;
+}
+
+.currentTagText {
+  font-size: 20rpx;
+  color: $color-text-white;
 }
 
 .rankDetail {
@@ -297,60 +301,37 @@
 
 .rankScore {
   font-size: $font-size-lg;
-  font-weight: $font-weight-bold;
+  font-weight: $font-weight-semibold;
   color: $color-primary;
   margin-left: $spacing-md;
 }
 
-.overdueCard {
+.eventList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.emptyTip {
   background: $color-bg-card;
   border-radius: $radius-lg;
-  padding: $spacing-lg;
+  padding: $spacing-xl;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   box-shadow: $shadow-card;
 }
 
-.overdueItem {
-  display: flex;
-  align-items: flex-start;
-  padding: $spacing-md 0;
-  border-bottom: 1rpx solid $color-divider;
-
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-  }
-
-  &:first-child {
-    padding-top: 0;
-  }
+.emptyIcon {
+  font-size: 64rpx;
+  margin-bottom: $spacing-md;
 }
 
-.overdueIcon {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: $radius-round;
-  background: $color-error-bg;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24rpx;
-  margin-right: $spacing-md;
-  flex-shrink: 0;
-}
-
-.overdueInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.overdueTitle {
+.emptyText {
   font-size: $font-size-sm;
-  color: $color-text-primary;
-  margin-bottom: 4rpx;
-  @include text-ellipsis;
+  color: $color-text-tertiary;
 }
 
-.overdueTime {
-  font-size: $font-size-xs;
-  color: $color-error;
+.pageBottom {
+  height: 48rpx;
 }

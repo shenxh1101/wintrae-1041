@@ -1,199 +1,306 @@
 import React, { useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import classnames from 'classnames'
-import dayjs from 'dayjs'
-import { mockStatistics, mockGridStatistics } from '@/data/statistics'
-import { mockTasks } from '@/data/tasks'
+import SectionHeader from '@/components/SectionHeader'
+import StatCard from '@/components/StatCard'
+import EventCard from '@/components/EventCard'
+import { mockGridWorker, grids } from '@/data/statistics'
+import { useAppStore } from '@/store'
 import styles from './index.module.scss'
 
 const StatisticsPage: React.FC = () => {
-  const currentMonth = dayjs().format('YYYY年MM月')
+  const tasks = useAppStore((s) => s.tasks)
+  const events = useAppStore((s) => s.events)
+  const resetAllData = useAppStore((s) => s.resetAllData)
 
-  const overdueTasks = useMemo(() => {
-    return mockTasks.filter(t => t.status === 'overdue')
-  }, [])
+  const stats = useMemo(() => {
+    const totalTasks = tasks.length
+    const completedTasks = tasks.filter((t) => t.status === 'completed').length
+    const inProgressTasks = tasks.filter((t) => t.status === 'in_progress').length
+    const checkedInTasks = tasks.filter((t) => !!t.checkInTime).length
+    const overdueTasks = tasks.filter((t) => t.status === 'overdue').length
+    const pendingTasks = tasks.filter((t) => t.status === 'pending').length
 
-  const visitRate = Math.round((mockStatistics.completedVisits / mockStatistics.totalVisits) * 100)
-  const eventRate = Math.round((mockStatistics.resolvedEvents / mockStatistics.totalEvents) * 100)
+    const totalEvents = events.length
+    const resolvedEvents = events.filter((e) => e.status === 'resolved' || e.status === 'closed').length
+    const processingEvents = events.filter((e) => e.status === 'processing').length
+    const pendingEvents = events.filter((e) => e.status === 'pending').length
 
-  const sortedGridStats = useMemo(() => {
-    return [...mockGridStatistics].sort((a, b) => b.performanceScore - a.performanceScore)
-  }, [])
+    const visitCompletionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+    const eventResolveRate = totalEvents > 0 ? Math.round((resolvedEvents / totalEvents) * 100) : 0
+    const checkInRate = totalTasks > 0 ? Math.round((checkedInTasks / totalTasks) * 100) : 0
+
+    const baseScore = 60
+    const completedBonus = completedTasks * 3
+    const resolvedBonus = resolvedEvents * 4
+    const overduePenalty = overdueTasks * 5
+    const performanceScore = Math.max(0, Math.min(100, baseScore + completedBonus + resolvedBonus - overduePenalty))
+
+    const now = Date.now()
+    const todayVisits = tasks.filter((t) => {
+      if (!t.checkInTime) return false
+      const d = new Date(t.checkInTime.replace(/-/g, '/'))
+      const today = new Date()
+      return d.getFullYear() === today.getFullYear()
+        && d.getMonth() === today.getMonth()
+        && d.getDate() === today.getDate()
+    }).length
+
+    return {
+      totalTasks,
+      completedTasks,
+      inProgressTasks,
+      pendingTasks,
+      overdueTasks,
+      checkedInTasks,
+      totalEvents,
+      resolvedEvents,
+      processingEvents,
+      pendingEvents,
+      visitCompletionRate,
+      eventResolveRate,
+      checkInRate,
+      performanceScore,
+      todayVisits
+    }
+  }, [tasks, events])
+
+  const gridRankings = useMemo(() => {
+    const gridMap: Record<string, { visits: number; resolved: number; overdue: number }> = {}
+    grids.forEach((g) => {
+      gridMap[g] = { visits: 0, resolved: 0, overdue: 0 }
+    })
+
+    tasks.forEach((t) => {
+      if (!gridMap[t.grid]) gridMap[t.grid] = { visits: 0, resolved: 0, overdue: 0 }
+      if (t.status === 'completed' || t.checkInTime) {
+        gridMap[t.grid].visits += 1
+      }
+      if (t.status === 'overdue') {
+        gridMap[t.grid].overdue += 1
+      }
+    })
+
+    events.forEach((e) => {
+      if (!gridMap[e.grid]) gridMap[e.grid] = { visits: 0, resolved: 0, overdue: 0 }
+      if (e.status === 'resolved' || e.status === 'closed') {
+        gridMap[e.grid].resolved += 1
+      }
+    })
+
+    return grids
+      .map((g, idx) => {
+        const data = gridMap[g] || { visits: 0, resolved: 0, overdue: 0 }
+        const score = 60 + data.visits * 3 + data.resolved * 4 - data.overdue * 5
+        const isCurrent = g === mockGridWorker.grid
+        return {
+          name: g,
+          visits: data.visits,
+          resolved: data.resolved,
+          overdue: data.overdue,
+          score: Math.max(0, Math.min(100, score)),
+          ranking: 0,
+          isCurrent,
+          originalIndex: idx
+        }
+      })
+      .sort((a, b) => b.score - a.score)
+      .map((item, idx) => ({ ...item, ranking: idx + 1 }))
+      .sort((a, b) => {
+        if (a.isCurrent && !b.isCurrent) return -1
+        if (!a.isCurrent && b.isCurrent) return 1
+        return a.ranking - b.ranking
+      })
+  }, [tasks, events])
+
+  const overdueEventList = useMemo(() => {
+    return events.filter((e) => e.status === 'pending' || e.status === 'processing').slice(0, 3)
+  }, [events])
+
+  const handleResetData = () => {
+    Taro.showModal({
+      title: '确认重置',
+      content: '所有统计数据将恢复为初始演示数据,确定继续吗?',
+      success: (res) => {
+        if (res.confirm) resetAllData()
+      }
+    })
+  }
+
+  const handleOverdueClick = (id: string) => {
+    Taro.showToast({ title: `查看事件 ${id}`, icon: 'none' })
+  }
 
   return (
     <View className={styles.page}>
-      {/* 顶部头 */}
       <View className={styles.header}>
-        <Text className={styles.headerTitle}>数据统计</Text>
-        <Text className={styles.headerSubtitle}>{currentMonth} · 个人绩效</Text>
-
-        {/* 绩效总览卡片 */}
-        <View className={styles.performanceCard}>
-          <View className={styles.scoreSection}>
-            <Text className={styles.scoreValue}>{mockStatistics.performanceScore}</Text>
-            <Text className={styles.scoreLabel}>绩效得分</Text>
-          </View>
-          <View className={styles.rankSection}>
-            <View className={styles.rankRow}>
-              <Text className={styles.rankLabel}>网格排名</Text>
-              <Text className={styles.rankValue}>第 {mockStatistics.ranking} 名</Text>
-            </View>
-            <View className={styles.rankRow}>
-              <Text className={styles.rankLabel}>所属网格</Text>
-              <Text className={styles.rankValue}>{mockStatistics.gridName}</Text>
-            </View>
+        <View className={styles.headerRow}>
+          <Text className={styles.headerTitle}>数据统计</Text>
+          <View className={styles.resetBtn} onClick={handleResetData}>
+            <Text className={styles.resetBtnText}>重置</Text>
           </View>
         </View>
-
-        {/* 数据概览 */}
-        <View className={styles.statGrid}>
-          <View className={classnames(styles.statCard, styles.primary)}>
-            <Text className={styles.statTitle}>本月走访</Text>
-            <View style={{ display: 'flex', alignItems: 'baseline' }}>
-              <Text className={styles.statValue}>{mockStatistics.completedVisits}</Text>
-              <Text className={styles.statUnit}>/ {mockStatistics.totalVisits} 次</Text>
+        <View className={styles.scoreCard}>
+          <View className={styles.scoreInfo}>
+            <Text className={styles.scoreLabel}>个人绩效</Text>
+            <View className={styles.scoreRow}>
+              <Text className={styles.scoreValue}>{stats.performanceScore}</Text>
+              <Text className={styles.scoreUnit}>分</Text>
             </View>
-            <Text className={styles.statSubtext}>完成率 {visitRate}%</Text>
+            <Text className={styles.scoreGrid}>{mockGridWorker.grid} · {mockGridWorker.name}</Text>
           </View>
-
-          <View className={classnames(styles.statCard, styles.success)}>
-            <Text className={styles.statTitle}>事件处置</Text>
-            <View style={{ display: 'flex', alignItems: 'baseline' }}>
-              <Text className={styles.statValue}>{mockStatistics.resolvedEvents}</Text>
-              <Text className={styles.statUnit}>/ {mockStatistics.totalEvents} 件</Text>
+          <View className={styles.rankInfo}>
+            <Text className={styles.rankLabel}>网格排名</Text>
+            <View className={styles.rankValueWrap}>
+              <Text className={styles.rankValue}>
+                {gridRankings.find((r) => r.isCurrent)?.ranking || '-'}
+              </Text>
+              <Text className={styles.rankTotal}>/ {grids.length}</Text>
             </View>
-            <Text className={styles.statSubtext}>解决率 {eventRate}%</Text>
-          </View>
-
-          <View className={classnames(styles.statCard, styles.warning)}>
-            <Text className={styles.statTitle}>进行中任务</Text>
-            <Text className={styles.statValue}>{mockTasks.filter(t => t.status === 'in_progress').length}</Text>
-            <Text className={styles.statSubtext}>需及时处理</Text>
-          </View>
-
-          <View className={classnames(styles.statCard, styles.error)}>
-            <Text className={styles.statTitle}>超时任务</Text>
-            <Text className={styles.statValue}>{mockStatistics.overdueTasks}</Text>
-            <Text className={styles.statSubtext}>请尽快跟进</Text>
           </View>
         </View>
       </View>
 
-      {/* 内容区 */}
-      <ScrollView scrollY className={styles.content}>
-        {/* 完成进度 */}
+      <ScrollView scrollY className={styles.content} enhanced>
         <View className={styles.section}>
-          <View className={styles.sectionHeader}>
-            <Text className={styles.sectionTitle}>完成进度</Text>
+          <SectionHeader title='核心数据' />
+          <View className={styles.statGrid}>
+            <StatCard
+              color='primary'
+              title='本月走访'
+              value={stats.completedTasks + stats.inProgressTasks}
+              unit='次'
+              trend={`已完成 ${stats.completedTasks}`}
+            />
+            <StatCard
+              color='success'
+              title='事件处置'
+              value={stats.resolvedEvents}
+              unit='件'
+              trend={`处置中 ${stats.processingEvents}`}
+            />
+            <StatCard
+              color='warning'
+              title='进行中任务'
+              value={stats.pendingTasks + stats.inProgressTasks}
+              unit='项'
+              trend={`已签到 ${stats.checkedInTasks}`}
+            />
+            <StatCard
+              color='error'
+              title='超时任务'
+              value={stats.overdueTasks}
+              unit='项'
+              trend='需尽快处理'
+            />
           </View>
+        </View>
 
+        <View className={styles.section}>
+          <SectionHeader title='完成进度' />
           <View className={styles.progressCard}>
             <View className={styles.progressItem}>
               <View className={styles.progressHeader}>
-                <Text className={styles.progressLabel}>走访任务完成率</Text>
-                <Text className={styles.progressPercent}>{visitRate}%</Text>
+                <Text className={styles.progressLabel}>走访完成率</Text>
+                <Text className={styles.progressValue}>{stats.visitCompletionRate}%</Text>
               </View>
               <View className={styles.progressBar}>
-                <View
-                  className={classnames(styles.progressFill, styles.primary)}
-                  style={{ width: `${visitRate}%` }}
-                />
+                <View className={classnames(styles.progressFill, styles.progressFill_primary)}
+                  style={{ width: `${stats.visitCompletionRate}%` }} />
               </View>
+              <Text className={styles.progressSub}>
+                已完成 {stats.completedTasks} / 共 {stats.totalTasks} 项
+              </Text>
             </View>
 
             <View className={styles.progressItem}>
               <View className={styles.progressHeader}>
-                <Text className={styles.progressLabel}>事件处置完成率</Text>
-                <Text className={styles.progressPercent}>{eventRate}%</Text>
+                <Text className={styles.progressLabel}>事件解决率</Text>
+                <Text className={styles.progressValue}>{stats.eventResolveRate}%</Text>
               </View>
               <View className={styles.progressBar}>
-                <View
-                  className={classnames(styles.progressFill, styles.success)}
-                  style={{ width: `${eventRate}%` }}
-                />
+                <View className={classnames(styles.progressFill, styles.progressFill_success)}
+                  style={{ width: `${stats.eventResolveRate}%` }} />
               </View>
+              <Text className={styles.progressSub}>
+                已解决 {stats.resolvedEvents} / 共 {stats.totalEvents} 件
+              </Text>
             </View>
 
             <View className={styles.progressItem}>
               <View className={styles.progressHeader}>
-                <Text className={styles.progressLabel}>按时完成率</Text>
-                <Text className={styles.progressPercent}>
-                  {Math.round(((mockStatistics.totalVisits - mockStatistics.overdueTasks) / mockStatistics.totalVisits) * 100)}%
-                </Text>
+                <Text className={styles.progressLabel}>签到出勤率</Text>
+                <Text className={styles.progressValue}>{stats.checkInRate}%</Text>
               </View>
               <View className={styles.progressBar}>
-                <View
-                  className={classnames(styles.progressFill, styles.warning)}
-                  style={{
-                    width: `${Math.round(((mockStatistics.totalVisits - mockStatistics.overdueTasks) / mockStatistics.totalVisits) * 100)}%`
-                  }}
-                />
+                <View className={classnames(styles.progressFill, styles.progressFill_warning)}
+                  style={{ width: `${stats.checkInRate}%` }} />
               </View>
+              <Text className={styles.progressSub}>
+                已签到 {stats.checkedInTasks} / 共 {stats.totalTasks} 项
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* 网格排名 */}
         <View className={styles.section}>
-          <View className={styles.sectionHeader}>
-            <Text className={styles.sectionTitle}>网格排名</Text>
-            <Text className={styles.sectionExtra}>共 {sortedGridStats.length} 个网格</Text>
-          </View>
-
-          <View className={styles.rankList}>
-            {sortedGridStats.map((grid, index) => (
+          <SectionHeader title='网格排名' extra={`共 ${grids.length} 个网格`} />
+          <View className={styles.rankCard}>
+            {gridRankings.map((item) => (
               <View
-                key={grid.gridName}
-                className={classnames(
-                  styles.rankItem,
-                  grid.gridName === mockStatistics.gridName && styles.current
-                )}
+                key={item.name}
+                className={classnames(styles.rankRow, { [styles.rankRow_current]: item.isCurrent })}
               >
-                <View
-                  className={classnames(
-                    styles.rankNumber,
-                    index === 0 && styles.rank1,
-                    index === 1 && styles.rank2,
-                    index === 2 && styles.rank3
-                  )}
-                >
-                  <Text>{index + 1}</Text>
-                </View>
-                <View className={styles.rankInfo}>
-                  <Text className={styles.rankName}>{grid.gridName}</Text>
-                  <Text className={styles.rankDetail}>
-                    走访 {grid.completedVisits} 次 · 事件 {grid.resolvedEvents} 件
+                <View className={classnames(
+                  styles.rankBadge,
+                  item.ranking === 1 && styles.rankBadge_gold,
+                  item.ranking === 2 && styles.rankBadge_silver,
+                  item.ranking === 3 && styles.rankBadge_bronze,
+                  item.ranking > 3 && styles.rankBadge_normal
+                )}>
+                  <Text className={styles.rankBadgeText}>
+                    {item.ranking === 1 ? '🥇' : item.ranking === 2 ? '🥈' : item.ranking === 3 ? '🥉' : item.ranking}
                   </Text>
                 </View>
-                <Text className={styles.rankScore}>{grid.performanceScore}分</Text>
+                <View className={styles.rankInfoCol}>
+                  <View className={styles.rankNameRow}>
+                    <Text className={classnames(styles.rankName, { [styles.rankName_current]: item.isCurrent })}>
+                      {item.name}
+                    </Text>
+                    {item.isCurrent && (
+                      <View className={styles.currentTag}>
+                        <Text className={styles.currentTagText}>当前</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text className={styles.rankDetail}>
+                    走访 {item.visits} · 解决 {item.resolved} · 超时 {item.overdue}
+                  </Text>
+                </View>
+                <Text className={styles.rankScore}>{item.score}分</Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* 超时任务 */}
-        {overdueTasks.length > 0 && (
-          <View className={styles.section}>
-            <View className={styles.sectionHeader}>
-              <Text className={styles.sectionTitle}>超时任务</Text>
-              <Text className={styles.sectionExtra}>{overdueTasks.length} 项待处理</Text>
-            </View>
-
-            <View className={styles.overdueCard}>
-              {overdueTasks.map((task) => (
-                <View key={task.id} className={styles.overdueItem}>
-                  <View className={styles.overdueIcon}>
-                    <Text>⚠️</Text>
-                  </View>
-                  <View className={styles.overdueInfo}>
-                    <Text className={styles.overdueTitle}>{task.title}</Text>
-                    <Text className={styles.overdueTime}>截止时间：{task.deadline}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
+        <View className={styles.section}>
+          <SectionHeader title='待处理/进行中事件' extra={`${overdueEventList.length}件`} />
+          <View className={styles.eventList}>
+            {overdueEventList.length === 0 ? (
+              <View className={styles.emptyTip}>
+                <Text className={styles.emptyIcon}>✨</Text>
+                <Text className={styles.emptyText}>暂无待处理事件</Text>
+              </View>
+            ) : (
+              overdueEventList.map((event) => (
+                <EventCard key={event.id} event={event} onClick={() => handleOverdueClick(event.id)} />
+              ))
+            )}
           </View>
-        )}
+        </View>
+
+        <View className={styles.pageBottom} />
       </ScrollView>
     </View>
   )

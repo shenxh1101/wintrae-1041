@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react'
-import { View, Text, ScrollView, Button, Image } from '@tarojs/components'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
+import { View, Text, ScrollView, Image } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import classnames from 'classnames'
 import TaskCard from '@/components/TaskCard'
@@ -22,6 +22,12 @@ const STATUS_TABS: Array<{ key: string; label: string }> = [
   { key: 'overdue', label: '已超时' },
 ]
 
+interface VoiceData {
+  duration: number
+  url: string
+  time: number
+}
+
 export default function TasksPage() {
   const tasks = useAppStore((s) => s.tasks)
   const checkIn = useAppStore((s) => s.checkIn)
@@ -34,11 +40,13 @@ export default function TasksPage() {
   const [activeType, setActiveType] = useState('all')
   const [activeStatus, setActiveStatus] = useState('all')
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
-  const [checkInAddress, setCheckInAddress] = useState('')
   const [remarkText, setRemarkText] = useState('')
   const [isRecording, setIsRecording] = useState(false)
   const [recordTime, setRecordTime] = useState(0)
-  const [recordTimer, setRecordTimer] = useState<number | null>(null)
+  const recordTimerRef = useRef<number | null>(null)
+  const recorderManagerRef = useRef<any>(null)
+  const audioCtxRef = useRef<any>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   const selectedTask = useMemo(() => {
     return tasks.find((t) => t.id === selectedTaskId) || null
@@ -49,6 +57,62 @@ export default function TasksPage() {
       setRemarkText(selectedTask.remark || '')
     }
   }, [selectedTaskId])
+
+  useEffect(() => {
+    try {
+      const rm = Taro.getRecorderManager()
+      recorderManagerRef.current = rm
+      rm.onStart(() => {
+        console.log('[Tasks] 录音开始')
+        setIsRecording(true)
+        setRecordTime(0)
+        recordTimerRef.current = window.setInterval(() => {
+          setRecordTime((t) => {
+            if (t >= 60) {
+              stopRecording()
+              return 60
+            }
+            return t + 1
+          })
+        }, 1000) as unknown as number
+      })
+      rm.onStop((res: any) => {
+        console.log('[Tasks] 录音结束,时长:', res.duration, '路径:', res.tempFilePath)
+        if (recordTimerRef.current) {
+          window.clearInterval(recordTimerRef.current)
+          recordTimerRef.current = null
+        }
+        const duration = Math.max(1, Math.round((res.duration || recordTime * 1000) / 1000))
+        if (selectedTaskId && duration > 0) {
+          updateTaskVoice(selectedTaskId, duration, res.tempFilePath || `voice_${Date.now()}.aac`)
+          Taro.showToast({ title: `已保存 ${duration} 秒语音`, icon: 'success' })
+        }
+        setIsRecording(false)
+      })
+      rm.onError((err: any) => {
+        console.warn('[Tasks] 录音错误:', err)
+        if (recordTimerRef.current) {
+          window.clearInterval(recordTimerRef.current)
+          recordTimerRef.current = null
+        }
+        Taro.showToast({ title: '录音失败,请检查权限', icon: 'none' })
+        setIsRecording(false)
+      })
+    } catch (e) {
+      console.warn('[Tasks] 环境不支持 getRecorderManager,将使用模拟录音')
+    }
+    return () => {
+      if (recordTimerRef.current) {
+        window.clearInterval(recordTimerRef.current)
+        recordTimerRef.current = null
+      }
+      if (audioCtxRef.current) {
+        try {
+          audioCtxRef.current.destroy()
+        } catch (e) {}
+      }
+    }
+  }, [selectedTaskId, updateTaskVoice])
 
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
@@ -62,6 +126,7 @@ export default function TasksPage() {
   const inProgressCount = useMemo(() => tasks.filter((t) => t.status === 'in_progress').length, [tasks])
 
   const handleTaskClick = (taskId: string) => {
+    stopPlayback()
     setSelectedTaskId(taskId)
     setRemarkText('')
     setIsRecording(false)
@@ -69,9 +134,10 @@ export default function TasksPage() {
   }
 
   const handleCloseDetail = () => {
+    stopPlayback()
+    stopRecording()
     setSelectedTaskId(null)
     setRemarkText('')
-    stopRecording()
   }
 
   const handleCheckIn = async () => {
@@ -79,15 +145,13 @@ export default function TasksPage() {
     Taro.showLoading({ title: '定位中...' })
     try {
       const location = await Taro.getLocation({ type: 'gcj02', isHighAccuracy: true })
-      const address = `经度:${location.longitude.toFixed(4)}, 纬度:${location.latitude.toFixed(4)}`
-      setCheckInAddress(address)
+      const address = `经度:${location.longitude.toFixed(4)},纬度:${location.latitude.toFixed(4)}`
       checkIn(selectedTask.id, address)
       Taro.hideLoading()
       Taro.showToast({ title: '签到成功', icon: 'success' })
     } catch (e) {
       console.log('[Tasks] 定位失败,使用模拟地址')
-      const mockAddress = '浙江省杭州市西湖区文三路100号 (签到位置)'
-      setCheckInAddress(mockAddress)
+      const mockAddress = '浙江省杭州市西湖区文三路100号(签到位置)'
       checkIn(selectedTask.id, mockAddress)
       Taro.hideLoading()
       Taro.showToast({ title: '签到成功(模拟)', icon: 'success' })
@@ -109,7 +173,7 @@ export default function TasksPage() {
           chooseRes.tempFilePaths.forEach((path) => {
             addTaskPhoto(selectedTask.id, path)
           })
-          Taro.showToast({ title: `已添加${chooseRes.tempFilePaths.length}张照片`, icon: 'success' })
+          Taro.showToast({ title: `已添加${chooseRes.tempFilePaths.length}张`, icon: 'success' })
         }
       })
     } catch (e) {
@@ -134,22 +198,49 @@ export default function TasksPage() {
 
   const startRecording = () => {
     if (!selectedTask) return
+    if (recorderManagerRef.current) {
+      try {
+        recorderManagerRef.current.start({
+          duration: 60000,
+          sampleRate: 44100,
+          numberOfChannels: 1,
+          encodeBitRate: 192000,
+          format: 'aac'
+        })
+        return
+      } catch (e) {
+        console.warn('[Tasks] 原生录音失败,降级为模拟:', e)
+      }
+    }
     setIsRecording(true)
     setRecordTime(0)
-    const timer = window.setInterval(() => {
-      setRecordTime((t) => t + 1)
-    }, 1000)
-    setRecordTimer(timer)
+    recordTimerRef.current = window.setInterval(() => {
+      setRecordTime((t) => {
+        if (t >= 60) {
+          stopRecording()
+          return 60
+        }
+        return t + 1
+      })
+    }, 1000) as unknown as number
     Taro.showToast({ title: '开始录音', icon: 'none' })
   }
 
   const stopRecording = () => {
-    if (recordTimer) {
-      window.clearInterval(recordTimer)
-      setRecordTimer(null)
+    if (recorderManagerRef.current && isRecording) {
+      try {
+        recorderManagerRef.current.stop()
+        return
+      } catch (e) {
+        console.warn('[Tasks] 停止录音失败:', e)
+      }
+    }
+    if (recordTimerRef.current) {
+      window.clearInterval(recordTimerRef.current)
+      recordTimerRef.current = null
     }
     if (isRecording && selectedTask && recordTime > 0) {
-      const url = `voice_${Date.now()}.mp3`
+      const url = `voice_${Date.now()}.aac`
       updateTaskVoice(selectedTask.id, recordTime, url)
       Taro.showToast({ title: `已保存语音 ${recordTime}秒`, icon: 'success' })
     }
@@ -164,10 +255,58 @@ export default function TasksPage() {
     }
   }
 
+  const stopPlayback = () => {
+    if (audioCtxRef.current) {
+      try {
+        audioCtxRef.current.stop()
+        audioCtxRef.current.destroy()
+      } catch (e) {}
+      audioCtxRef.current = null
+    }
+    setIsPlaying(false)
+  }
+
   const handlePlayVoice = () => {
     if (!selectedTask?.voiceNote) return
-    const voice = JSON.parse(selectedTask.voiceNote)
-    Taro.showToast({ title: `播放语音 ${voice.duration}秒...`, icon: 'none', duration: 1500 })
+    const voice: VoiceData = JSON.parse(selectedTask.voiceNote)
+    if (!voice.url || voice.url.startsWith('voice_')) {
+      Taro.showToast({ title: `播放语音 ${voice.duration} 秒(模拟)`, icon: 'none', duration: 1500 })
+      setIsPlaying(true)
+      setTimeout(() => setIsPlaying(false), Math.min(voice.duration * 1000, 5000))
+      return
+    }
+    if (isPlaying) {
+      stopPlayback()
+      return
+    }
+    try {
+      const ctx = Taro.createInnerAudioContext()
+      ctx.src = voice.url
+      ctx.onPlay(() => {
+        console.log('[Tasks] 语音开始播放')
+        setIsPlaying(true)
+      })
+      ctx.onEnded(() => {
+        console.log('[Tasks] 语音播放结束')
+        setIsPlaying(false)
+        try { ctx.destroy() } catch (e) {}
+        audioCtxRef.current = null
+      })
+      ctx.onError((err) => {
+        console.warn('[Tasks] 语音播放错误:', err)
+        setIsPlaying(false)
+        Taro.showToast({ title: '播放失败', icon: 'none' })
+        try { ctx.destroy() } catch (e) {}
+        audioCtxRef.current = null
+      })
+      ctx.play()
+      audioCtxRef.current = ctx
+    } catch (e) {
+      console.warn('[Tasks] 不支持原生音频播放,使用模拟')
+      Taro.showToast({ title: `播放语音 ${voice.duration} 秒`, icon: 'none', duration: 1500 })
+      setIsPlaying(true)
+      setTimeout(() => setIsPlaying(false), Math.min(voice.duration * 1000, 5000))
+    }
   }
 
   const handleRemarkChange = (e: any) => {
@@ -194,6 +333,7 @@ export default function TasksPage() {
       content: '确定标记该任务为已完成吗?',
       success: (res) => {
         if (res.confirm) {
+          stopPlayback()
           completeTask(selectedTask.id)
           setSelectedTaskId(null)
           Taro.showToast({ title: '任务已完成', icon: 'success' })
@@ -202,7 +342,7 @@ export default function TasksPage() {
     })
   }
 
-  const parseVoiceNote = (note?: string) => {
+  const parseVoiceNote = (note?: string): VoiceData | null => {
     if (!note) return null
     try {
       return JSON.parse(note)
@@ -345,7 +485,7 @@ export default function TasksPage() {
                     <View className={styles.checkInInfo}>
                       <Text className={styles.checkInTitle}>已完成签到</Text>
                       <Text className={styles.checkInTime}>签到时间:{selectedTask.checkInTime}</Text>
-                      <Text className={styles.checkInAddr}>签到地址:{selectedTask.checkInAddress || checkInAddress || selectedTask.address}</Text>
+                      <Text className={styles.checkInAddr}>签到地址:{selectedTask.checkInAddress || selectedTask.address}</Text>
                     </View>
                   </View>
                 ) : (
@@ -386,13 +526,15 @@ export default function TasksPage() {
               <View className={styles.voiceSection}>
                 <Text className={styles.sectionSubTitle}>🎙️ 语音备注</Text>
                 {voiceData ? (
-                  <View className={styles.voiceRecorded}>
+                  <View className={classnames(styles.voiceRecorded, { [styles.voicePlaying]: isPlaying })}>
                     <View className={styles.voicePlayBtn} onClick={handlePlayVoice}>
-                      <Text className={styles.voiceIcon}>▶️</Text>
+                      <Text className={styles.voiceIcon}>{isPlaying ? '⏸' : '▶'}</Text>
                     </View>
                     <View className={styles.voiceInfo}>
-                      <Text className={styles.voiceLabel}>语音备注</Text>
-                      <Text className={styles.voiceMeta}>时长 {voiceData.duration} 秒</Text>
+                      <Text className={styles.voiceLabel}>
+                        {isPlaying ? '播放中...' : '语音备注'}
+                      </Text>
+                      <Text className={styles.voiceMeta}>时长 {voiceData.duration} 秒 · 已保存</Text>
                     </View>
                     <View
                       className={styles.voiceReRecord}
@@ -412,12 +554,12 @@ export default function TasksPage() {
                     {isRecording ? (
                       <>
                         <Text className={styles.voiceTimeText}>录制中 {recordTime}s</Text>
-                        <Text className={styles.voiceHintText}>点击停止</Text>
+                        <Text className={styles.voiceHintText}>点击停止保存</Text>
                       </>
                     ) : (
                       <>
                         <Text className={styles.voiceRecordText}>点击录制语音备注</Text>
-                        <Text className={styles.voiceHintText}>最长支持60秒</Text>
+                        <Text className={styles.voiceHintText}>最长支持60秒,录完自动保存</Text>
                       </>
                     )}
                   </View>

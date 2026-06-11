@@ -48,6 +48,8 @@ export interface Event {
   reportTime: string
   handler?: string
   handleTime?: string
+  handleResult?: string
+  handlePhotos?: string[]
   photos?: string[]
 }
 
